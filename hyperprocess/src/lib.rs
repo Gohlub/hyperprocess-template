@@ -1,18 +1,21 @@
 use hyperprocess_macro::hyperprocess;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use hyperware_app_common::hyperware_process_lib as hyperware_process_lib;
+
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct HyperprocessState {
     state: HashMap<String, String>,
 }
 
-// pub struct ResponseAPI {
-//     response: String,
-// }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ResponseAPI {
+    response: String,
+}
 
-// pub struct InternalType {
-//     pub type_name: String,
-// }
+pub struct InternalType {
+    pub type_name: String,
+}
 
 #[hyperprocess(
     name = "Hyperprocess",
@@ -21,7 +24,7 @@ pub struct HyperprocessState {
         Binding::Http {
             path: "/api",
             config: HttpBindingConfig::new(false, false, false, None),
-        }, 
+        },
         Binding::Ws {
             path: "/ws",
             config: WsBindingConfig::new(false, false, false),
@@ -49,7 +52,7 @@ impl HyperprocessState {
 
     // Double annotation for endpoint accepting both local and remote Hyperware requests
     #[local]
-    #[remote]   
+    #[remote]
     async fn get_state(&self) -> Vec<String> {
         // Convert HashMap values to Vec<String>
         self.state.values().cloned().collect()
@@ -63,12 +66,12 @@ impl HyperprocessState {
         self.state.values().cloned().collect()
     }
 
-    // #[local]
-    // async fn get_state_api(&self) -> ResponseAPI {
-    //     // Convert HashMap values to Vec<String>
-    //     ResponseAPI {
-    //         response: self.state.values().cloned().collect()
-    //     }
-    // }
+    #[local]
+    async fn get_state_api(&self) -> ResponseAPI {
+        // Convert HashMap values to Vec<String>
+        ResponseAPI {
+            response: self.state.values().cloned().collect()
+        }
+    }
 
 }
