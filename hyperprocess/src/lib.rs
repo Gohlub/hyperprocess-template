@@ -30,7 +30,7 @@ pub struct InternalType {
         }
     ],
     save_config = SaveOptions::EveryMessage,
-    wit_world = "hyperprocess-app-template-dot-os-v0"
+    wit_world = "hyperprocess-template-dot-os-v0"
 )]
 
 impl HyperprocessState {

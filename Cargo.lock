@@ -904,7 +904,7 @@ dependencies = [
  "anyhow",
  "futures",
  "futures-util",
- "hyperware_app_common",
+ "hyperware_app_common 0.1.0 (git+https://github.com/hyperware-ai/hyperprocess-macro?rev=47400ab)",
  "once_cell",
  "process_macros",
  "serde",
@@ -1655,11 +1655,30 @@ dependencies = [
  "anyhow",
  "caller-utils",
  "hyperprocess_macro",
- "hyperware_app_common",
+ "hyperware_app_common 0.1.0 (git+https://github.com/hyperware-ai/hyperprocess-macro?rev=47400ab)",
  "process_macros",
  "rmp-serde",
  "serde",
  "serde_json",
+ "wit-bindgen 0.36.0",
+]
+
+[[package]]
+name = "hyperprocess-test"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "caller-utils",
+ "hyperware_app_common 0.1.0 (git+https://github.com/hyperware-ai/hyperprocess-macro)",
+ "hyperware_process_lib 1.0.6",
+ "process_macros",
+ "rand 0.8.5",
+ "rmp-serde",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "url",
  "wit-bindgen 0.36.0",
 ]
 
@@ -1670,8 +1689,8 @@ source = "git+https://github.com/hyperware-ai/hyperprocess-macro?rev=47400ab#474
 dependencies = [
  "anyhow",
  "futures-util",
- "hyperware_app_common",
- "hyperware_process_lib",
+ "hyperware_app_common 0.1.0 (git+https://github.com/hyperware-ai/hyperprocess-macro?rev=47400ab)",
+ "hyperware_process_lib 1.1.0",
  "once_cell",
  "paste",
  "proc-macro2",
@@ -1693,7 +1712,7 @@ source = "git+https://github.com/hyperware-ai/hyperprocess-macro?rev=47400ab#474
 dependencies = [
  "anyhow",
  "futures-util",
- "hyperware_process_lib",
+ "hyperware_process_lib 1.1.0",
  "once_cell",
  "paste",
  "process_macros",
@@ -1703,6 +1722,53 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.12",
  "uuid",
+ "wit-bindgen 0.36.0",
+]
+
+[[package]]
+name = "hyperware_app_common"
+version = "0.1.0"
+source = "git+https://github.com/hyperware-ai/hyperprocess-macro#c847a1e7b1f4c3018399617de1c175ae93492f6b"
+dependencies = [
+ "anyhow",
+ "futures-util",
+ "hyperware_process_lib 1.0.6",
+ "once_cell",
+ "paste",
+ "process_macros",
+ "rmp-serde",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "uuid",
+ "wit-bindgen 0.36.0",
+]
+
+[[package]]
+name = "hyperware_process_lib"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6a0a275dd6e9974d5e6d68c30bbf9fb4bed1578b5d7dff100a6692005f90443"
+dependencies = [
+ "alloy",
+ "alloy-primitives",
+ "alloy-sol-macro",
+ "alloy-sol-types",
+ "anyhow",
+ "bincode",
+ "color-eyre",
+ "http",
+ "mime_guess",
+ "rand 0.8.5",
+ "regex",
+ "rmp-serde",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tracing",
+ "tracing-error",
+ "tracing-subscriber",
+ "url",
  "wit-bindgen 0.36.0",
 ]
 

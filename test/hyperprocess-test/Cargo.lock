@@ -904,8 +904,7 @@ dependencies = [
  "anyhow",
  "futures",
  "futures-util",
- "hyperware_app_common",
- "hyperware_process_lib",
+ "hyperware_app_common 0.1.0 (git+https://github.com/hyperware-ai/hyperprocess-macro?rev=47400ab)",
  "once_cell",
  "process_macros",
  "serde",
@@ -1656,8 +1655,8 @@ dependencies = [
  "anyhow",
  "bincode",
  "caller-utils",
- "hyperware_app_common",
- "hyperware_process_lib",
+ "hyperware_app_common 0.1.0 (git+https://github.com/hyperware-ai/hyperprocess-macro)",
+ "hyperware_process_lib 1.0.6",
  "process_macros",
  "rand 0.8.5",
  "rmp-serde",
@@ -1671,11 +1670,31 @@ dependencies = [
 [[package]]
 name = "hyperware_app_common"
 version = "0.1.0"
+source = "git+https://github.com/hyperware-ai/hyperprocess-macro?rev=47400ab#47400ab4cea14a6b0bdcb81b0c6e55ac0bcd00f3"
+dependencies = [
+ "anyhow",
+ "futures-util",
+ "hyperware_process_lib 1.1.0",
+ "once_cell",
+ "paste",
+ "process_macros",
+ "rmp-serde",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "thiserror 2.0.12",
+ "uuid",
+ "wit-bindgen 0.36.0",
+]
+
+[[package]]
+name = "hyperware_app_common"
+version = "0.1.0"
 source = "git+https://github.com/hyperware-ai/hyperprocess-macro#c847a1e7b1f4c3018399617de1c175ae93492f6b"
 dependencies = [
  "anyhow",
  "futures-util",
- "hyperware_process_lib",
+ "hyperware_process_lib 1.0.6",
  "once_cell",
  "paste",
  "process_macros",
@@ -1698,6 +1717,34 @@ dependencies = [
  "alloy-sol-macro",
  "alloy-sol-types",
  "anyhow",
+ "bincode",
+ "color-eyre",
+ "http",
+ "mime_guess",
+ "rand 0.8.5",
+ "regex",
+ "rmp-serde",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tracing",
+ "tracing-error",
+ "tracing-subscriber",
+ "url",
+ "wit-bindgen 0.36.0",
+]
+
+[[package]]
+name = "hyperware_process_lib"
+version = "1.1.0"
+source = "git+https://github.com/hyperware-ai/process_lib?rev=b7c9d27#b7c9d2753ad5630920758c8ba13e9844e2307ab5"
+dependencies = [
+ "alloy",
+ "alloy-primitives",
+ "alloy-sol-macro",
+ "alloy-sol-types",
+ "anyhow",
+ "base64",
  "bincode",
  "color-eyre",
  "http",
