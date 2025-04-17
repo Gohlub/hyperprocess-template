@@ -1649,7 +1649,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hyperprocess"
+name = "hyperprocess-template"
 version = "0.1.0"
 dependencies = [
  "anyhow",

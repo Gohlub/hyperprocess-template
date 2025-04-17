@@ -28,7 +28,7 @@ crate-type = ["cdylib"]
 
 [package]
 edition = "2021"
-name = "hyperprocess"
+name = "hyperprocess-template"
 version = "0.1.0"
 
 [package.metadata.component]
