@@ -11,8 +11,7 @@
       "0.1.0": ""
     },
     "wit_version": 1,
-    "dependencies": [
-        "hyperprocess-template:template.os"
+    "dependencies": [  
     ]
   },
   "external_url": "https://hyperware.ai",
