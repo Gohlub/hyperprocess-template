@@ -1,7 +1,6 @@
 use hyperprocess_macro::hyperprocess;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use hyperware_app_common::hyperware_process_lib as hyperware_process_lib;
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct HyperprocessState {
