@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import HyperwareClientApi from "@hyperware-ai/client-api";
 import "./App.css";
-import { SignIdMessage, VerifyIdMessage, SignResponse, VerifyResponse } from "./types/Id";
-import useIdStore from "./store/id";
+import useHyperprocessStore from "./store/hyperprocess";
+import { SubmitEntry, ViewState } from "./types/Hyperprocess";
 
 const BASE_URL = import.meta.env.BASE_URL;
 if (window.our) window.our.process = BASE_URL?.replace("/", "");
@@ -11,18 +11,90 @@ const PROXY_TARGET = `${(import.meta.env.VITE_NODE_URL || "http://localhost:8080
 
 // This env also has BASE_URL which should match the process + package name
 const WEBSOCKET_URL = import.meta.env.DEV
-  ? `${PROXY_TARGET.replace('http', 'ws')}`
+  ? `${PROXY_TARGET.replace('http', 'ws')}/ws`
   : undefined;
 
 function App() {
-  const { messageHistory, addSignedMessage, updateVerificationStatus } = useIdStore();
-  const [message, setMessage] = useState("");
+  const { items, setStateItems } = useHyperprocessStore();
   const [nodeConnected, setNodeConnected] = useState(true);
-  const [api, setApi] = useState<HyperwareClientApi | undefined>();
+  const [_api, setApi] = useState<HyperwareClientApi | undefined>();
+  const [newEntry, setNewEntry] = useState("");
+
+  const fetchState = useCallback(async () => {
+    const requestData: ViewState = { ViewState: "" };
+    let responseText = ""; // Variable to hold raw text
+
+    try {
+      const result = await fetch(`${BASE_URL}/api`, {
+        method: "POST",
+        body: JSON.stringify(requestData), 
+      });
+
+      responseText = await result.text(); // Get raw response text first
+
+      if (!result.ok) {
+        console.error(`HTTP request failed: ${result.status} ${result.statusText}. Response:`, responseText);
+        throw new Error(`HTTP request failed: ${result.statusText}`);
+      }
+      
+      // Attempt to parse the raw text as JSON
+      const responseData = JSON.parse(responseText); 
+      
+      // Check if the parsed response is an array
+      if (Array.isArray(responseData)) {
+        console.log("Fetched state (as direct array):", responseData); 
+        // Assuming the array contains strings based on previous context
+        setStateItems(responseData as string[]); 
+      } else {
+        // Handle cases where the response is not an array (e.g., error object, unexpected format)
+        console.error("Error fetching state: Response was not the expected array.", "Raw Response:", responseText, "Parsed:", responseData); 
+        setStateItems([]);
+      }
+    } catch (error) {
+       // Catch fetch errors or JSON parsing errors
+      console.error("Failed to fetch state:", error, "Raw Response:", responseText);
+      setStateItems([]);
+    }
+  }, [setStateItems]);
+
+  const handleSubmitEntry = useCallback(async () => {
+    if (!newEntry.trim()) return;
+    const requestData: SubmitEntry = { SubmitEntry: newEntry };
+    let responseText = ""; // Variable to hold raw text
+
+    try {
+      const result = await fetch(`${BASE_URL}/api`, {
+        method: "POST",
+        body: JSON.stringify(requestData),
+      });
+
+      responseText = await result.text(); // Get raw response text
+
+      if (!result.ok) {
+        console.error(`HTTP request failed: ${result.status} ${result.statusText}. Response:`, responseText);
+        throw new Error(`HTTP request failed: ${result.statusText}`);
+      }
+
+      // Check if the raw response text is "true" for success
+      if (responseText === "true") { 
+        console.log("Entry submitted successfully");
+        setNewEntry("");
+        fetchState(); // Refresh state list
+      } else {
+        // Handle cases where the response is not "true" (might be an error string or unexpected value)
+        console.error("Error submitting entry: Unexpected response.", "Raw Response:", responseText);
+      }
+    } catch (error) {
+      // Catch fetch errors or errors from result.text()
+      console.error("Failed to submit entry:", error, "Raw Response:", responseText);
+    }
+  }, [newEntry, fetchState]);
 
   useEffect(() => {
-    // Connect to the Hyperdrive via websocket
-    console.log('WEBSOCKET URL', WEBSOCKET_URL)
+    // Fetch initial state when the component mounts
+    fetchState(); 
+
+    // Set up WebSocket connection
     if (window.our?.node && window.our?.process) {
       const api = new HyperwareClientApi({
         uri: WEBSOCKET_URL,
@@ -36,6 +108,8 @@ function App() {
           try {
             const data = JSON.parse(json);
             console.log("WebSocket received message", data);
+            // TODO: Handle potential state updates pushed via WebSocket?
+            // For example, if a message indicates new state, call fetchState()
           } catch (error) {
             console.error("Error parsing WebSocket message", error);
           }
@@ -46,81 +120,7 @@ function App() {
     } else {
       setNodeConnected(false);
     }
-  }, []);
-
-  const sendMessage = useCallback(
-    async (event) => {
-      event.preventDefault();
-
-      if (!message) return;
-
-      // Create a message object
-      const encoder = new TextEncoder();
-      const messageBytes = encoder.encode(message);
-      const messageArray = Array.from(messageBytes);
-      const data = {
-        Sign: messageArray,
-      } as SignIdMessage;
-
-      // Send a message to the node via HTTP request
-      try {
-        const result = await fetch(`${BASE_URL}/api`, {
-          method: "POST",
-          body: JSON.stringify(data),
-        });
-
-        if (!result.ok) throw new Error("HTTP request failed");
-        
-        // Parse the response to get the signature
-        const responseData = await result.json() as SignResponse;
-        
-        if (responseData.Ok) {
-          // Add the message and its signature to the store
-          addSignedMessage(message, responseData.Ok);
-          setMessage("");
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [message, setMessage, addSignedMessage]
-  );
-
-  const verifyMessage = useCallback(
-    async (index: number) => {
-      const signedMessage = messageHistory.messages[index];
-      if (!signedMessage) return;
-
-      // Create message bytes
-      const encoder = new TextEncoder();
-      const messageBytes = encoder.encode(signedMessage.message);
-      const messageArray = Array.from(messageBytes);
-      
-      // Create verify message object
-      const data = {
-        Verify: [messageArray, signedMessage.signature],
-      } as VerifyIdMessage;
-
-      // Send a verification request via HTTP
-      try {
-        const result = await fetch(`${BASE_URL}/api`, {
-          method: "POST",
-          body: JSON.stringify(data),
-        });
-
-        if (!result.ok) throw new Error("HTTP request failed");
-        
-        // Parse the response to get the verification result
-        const responseData = await result.json() as VerifyResponse;
-        
-        // Update the verification status in the store
-        updateVerificationStatus(index, responseData.Ok);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [messageHistory, updateVerificationStatus]
-  );
+  }, []); 
 
   return (
     <div style={{ width: "100%" }}>
@@ -136,61 +136,37 @@ function App() {
           </h4>
         </div>
       )}
-      <h2>Signature Verifier</h2>
+      <h2>Hyperprocess State Viewer</h2>
       <div className="card">
+        <div style={{ border: "1px solid gray", padding: "1em", marginBottom: '1em' }}>
+          <h3 style={{ marginTop: 0, textAlign: 'left' }}>Submit New Entry</h3>
+          <input 
+            type="text" 
+            value={newEntry} 
+            onChange={(e) => setNewEntry(e.target.value)} 
+            placeholder="Enter new state item"
+            style={{ marginRight: '0.5em', padding: '0.5em' }}
+          />
+          <button onClick={handleSubmitEntry}>Submit Entry</button>
+        </div>
         <div style={{ border: "1px solid gray", padding: "1em" }}>
-          <h3 style={{ marginTop: 0, textAlign: 'left' }}>Message History</h3>
+          <h3 style={{ marginTop: 0, textAlign: 'left' }}>Current State</h3>
           <div>
-            <ul className="message-list">
-              {messageHistory.messages.map((signedMessage, index) => (
-                <li key={index} className="signed-message">
-                  <div className="message-content">
-                    <span className="message-text">{signedMessage.message}</span>
-                    <span className="message-signature">
-                      Signature: [{signedMessage.signature.slice(0, 5).join(', ')}
-                      {signedMessage.signature.length > 5 ? '...' : ''}]
-                    </span>
-                  </div>
-                  <div className="verification">
-                    <button 
-                      onClick={() => verifyMessage(index)}
-                      className="verify-button"
-                    >
-                      Verify
-                    </button>
-                    {signedMessage.verified !== undefined && (
-                      <span 
-                        className={`verification-result ${signedMessage.verified ? 'verified' : 'failed'}`}
-                      >
-                        {signedMessage.verified ? '✓' : '✗'}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {items.length > 0 ? (
+              <ul className="message-list">
+                {items.map((item, index) => (
+                  <li key={index} className="signed-message">
+                    <div className="message-content">
+                      <span className="message-text">{item}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No state items found or failed to load.</p>
+            )}
           </div>
-          <form
-            onSubmit={sendMessage}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              marginTop: "1em",
-            }}
-          >
-            <div className="input-row">
-              <input
-                type="text"
-                id="message"
-                placeholder="Enter message to sign"
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                autoFocus
-              />
-              <button type="submit">Sign</button>
-            </div>
-          </form>
+          <button onClick={fetchState} style={{ marginTop: '1em' }}>Refresh State</button>
         </div>
       </div>
     </div>

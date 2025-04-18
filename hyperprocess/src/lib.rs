@@ -1,4 +1,6 @@
 use hyperprocess_macro::hyperprocess;
+// 
+use hyperware_app_common::hyperware_process_lib::kiprintln;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -7,20 +9,11 @@ pub struct HyperprocessState {
     state: HashMap<String, String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ResponseAPI {
-    response: String,
-}
-
-pub struct InternalType {
-    pub type_name: String,
-}
-
 #[hyperprocess(
     name = "Hyperprocess",
     ui = Some(HttpBindingConfig::default()),
     endpoints = vec![
-        Binding::Http {
+        Binding::Http { 
             path: "/api",
             config: HttpBindingConfig::new(false, false, false, None),
         },
@@ -59,18 +52,23 @@ impl HyperprocessState {
 
     // HTTP endpoint, will need to be a POST request on the frontend
     // to the /api endpoint
+    // We add an empty string as a parameter to satisfy the HTTP POST
+    // requirement, but it is not used.
     #[http]
-    async fn get_state_http(&self) -> Vec<String> {
+    async fn view_state(&self, empty: String) -> Vec<String> {
         // Convert HashMap values to Vec<String>
         self.state.values().cloned().collect()
     }
 
-    #[local]
-    async fn get_state_api(&self) -> ResponseAPI {
-        // Convert HashMap values to Vec<String>
-        ResponseAPI {
-            response: self.state.values().cloned().collect()
-        }
+    // HTTP endpoint, will need to be a POST request on the frontend
+    // to the /api endpoint
+    #[http]
+    async fn submit_entry(&mut self, value: String) -> bool {
+        // Using the value as both key and value for simplicity
+        // You may want to modify this based on your actual requirements
+        self.state.insert(value.clone(), value);
+        true
     }
+
 
 }
