@@ -1,6 +1,4 @@
 use hyperprocess_macro::hyperprocess;
-// 
-use hyperware_app_common::hyperware_process_lib::kiprintln;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -43,6 +41,7 @@ impl HyperprocessState {
     }
 
     // Double annotation for endpoint accepting both local and remote Hyperware requests
+    // Can also add #[http] as a third annotation to extend the endpoint to HTTP requests
     #[local]
     #[remote]
     async fn get_state(&self) -> Vec<String> {

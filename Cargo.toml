@@ -6,7 +6,6 @@ panic = "abort"
 [workspace]
 members = [
     "hyperprocess",
-    "target/caller-utils",
     "test/hyperprocess-test/hyperprocess-test",
 ]
 resolver = "2"
